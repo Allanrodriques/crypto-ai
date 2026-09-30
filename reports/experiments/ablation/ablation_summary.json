@@ -1,0 +1,339 @@
+{
+  "baseline_groups": [
+    "technical"
+  ],
+  "groups_under_test": [
+    "derivatives",
+    "sentiment",
+    "microstructure",
+    "context"
+  ],
+  "full_groups": [
+    "technical",
+    "derivatives",
+    "sentiment",
+    "microstructure",
+    "context"
+  ],
+  "common_test_rows": 6016,
+  "common_test_period": [
+    "2026-01-20 09:00:00+00:00",
+    "2026-09-28 00:00:00+00:00"
+  ],
+  "common_test_note": "Every variant is scored on the same test rows, because a group with a long warm-up shifts the chronological split and would otherwise give each variant a different evaluation period.",
+  "bootstrap": {
+    "method": "paired moving-block bootstrap on the common test rows",
+    "n_resamples": 500,
+    "block_size_rows": 24
+  },
+  "failed_variants": {},
+  "interpretation": {
+    "variants_tested": 9,
+    "variants_significantly_better": [],
+    "variants_significantly_worse": [],
+    "variants_indistinguishable": [
+      "add_derivatives",
+      "add_sentiment",
+      "add_microstructure",
+      "add_context",
+      "drop_derivatives",
+      "drop_sentiment",
+      "drop_microstructure",
+      "drop_context",
+      "full_union"
+    ],
+    "summary": "0 of 9 variants beat the baseline by more than the block-bootstrap noise on this single test period; 0 were significantly worse and 9 could not be distinguished from the baseline either way. A variant that is not significant is not evidence that the group is useless; it is evidence that this test period cannot distinguish it from the baseline."
+  },
+  "variants": [
+    {
+      "variant": "baseline",
+      "kind": "baseline",
+      "feature_groups": [
+        "technical"
+      ],
+      "removed_feature": null,
+      "n_features": 39,
+      "n_rows": 41342,
+      "validation_roc_auc": 0.5611809354588309,
+      "test_roc_auc": 0.6005169638834407,
+      "test_pr_auc": 0.32061149723217863,
+      "delta_roc_auc": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "probability_better": 0.0,
+      "significant_at_95": false,
+      "significantly_worse_at_95": false,
+      "verdict": "reference",
+      "walkforward_roc_auc_mean": 0.5919128095400101,
+      "n_trades": 14,
+      "total_return": -0.08738138017010422,
+      "excess_vs_buy_hold": -0.0034540812010320776,
+      "threshold": 0.44,
+      "notes": [
+        "scored on 6016 of 6202 own test rows (the common set across all variants)"
+      ]
+    },
+    {
+      "variant": "add_derivatives",
+      "kind": "add",
+      "feature_groups": [
+        "technical",
+        "derivatives"
+      ],
+      "removed_feature": null,
+      "n_features": 62,
+      "n_rows": 40102,
+      "validation_roc_auc": 0.5684910107053139,
+      "test_roc_auc": 0.5966643983572634,
+      "test_pr_auc": 0.3176483189057562,
+      "delta_roc_auc": -0.0038525655261772984,
+      "ci_low": -0.010662247095684033,
+      "ci_high": 0.0017086817283683009,
+      "probability_better": 0.094,
+      "significant_at_95": false,
+      "significantly_worse_at_95": false,
+      "verdict": "indistinguishable",
+      "walkforward_roc_auc_mean": 0.5831471712541922,
+      "n_trades": 14,
+      "total_return": 0.005096507875376188,
+      "excess_vs_buy_hold": 0.08269686883049032,
+      "threshold": 0.42,
+      "notes": []
+    },
+    {
+      "variant": "add_sentiment",
+      "kind": "add",
+      "feature_groups": [
+        "technical",
+        "sentiment"
+      ],
+      "removed_feature": null,
+      "n_features": 51,
+      "n_rows": 40822,
+      "validation_roc_auc": 0.576988652477293,
+      "test_roc_auc": 0.5942803740203358,
+      "test_pr_auc": 0.30972529638404755,
+      "delta_roc_auc": -0.0062365898631048244,
+      "ci_low": -0.01782499942412753,
+      "ci_high": 0.005700568568823269,
+      "probability_better": 0.146,
+      "significant_at_95": false,
+      "significantly_worse_at_95": false,
+      "verdict": "indistinguishable",
+      "walkforward_roc_auc_mean": 0.5744124608498491,
+      "n_trades": 22,
+      "total_return": -0.015265094225942799,
+      "excess_vs_buy_hold": 0.10622493902740893,
+      "threshold": 0.42,
+      "notes": [
+        "scored on 6016 of 6124 own test rows (the common set across all variants)"
+      ]
+    },
+    {
+      "variant": "add_microstructure",
+      "kind": "add",
+      "feature_groups": [
+        "technical",
+        "microstructure"
+      ],
+      "removed_feature": null,
+      "n_features": 61,
+      "n_rows": 41061,
+      "validation_roc_auc": 0.5677070856634894,
+      "test_roc_auc": 0.5962231239085893,
+      "test_pr_auc": 0.31728613124065697,
+      "delta_roc_auc": -0.004293839974851332,
+      "ci_low": -0.010338910086600173,
+      "ci_high": 0.001945996986916397,
+      "probability_better": 0.08,
+      "significant_at_95": false,
+      "significantly_worse_at_95": false,
+      "verdict": "indistinguishable",
+      "walkforward_roc_auc_mean": 0.5806092782869904,
+      "n_trades": 0,
+      "total_return": 0.0,
+      "excess_vs_buy_hold": 0.1169065266114927,
+      "threshold": 0.46,
+      "notes": [
+        "scored on 6016 of 6160 own test rows (the common set across all variants)"
+      ]
+    },
+    {
+      "variant": "add_context",
+      "kind": "add",
+      "feature_groups": [
+        "technical",
+        "context"
+      ],
+      "removed_feature": null,
+      "n_features": 50,
+      "n_rows": 41342,
+      "validation_roc_auc": 0.5639173924477248,
+      "test_roc_auc": 0.6022439350910431,
+      "test_pr_auc": 0.3217622680302157,
+      "delta_roc_auc": 0.0017269712076024568,
+      "ci_low": -0.003730392849816022,
+      "ci_high": 0.006641622046220054,
+      "probability_better": 0.73,
+      "significant_at_95": false,
+      "significantly_worse_at_95": false,
+      "verdict": "indistinguishable",
+      "walkforward_roc_auc_mean": 0.5965306545821354,
+      "n_trades": 23,
+      "total_return": -0.03301684145833084,
+      "excess_vs_buy_hold": 0.0509104575107413,
+      "threshold": 0.42,
+      "notes": [
+        "scored on 6016 of 6202 own test rows (the common set across all variants)"
+      ]
+    },
+    {
+      "variant": "drop_derivatives",
+      "kind": "drop",
+      "feature_groups": [
+        "technical",
+        "sentiment",
+        "microstructure",
+        "context"
+      ],
+      "removed_feature": null,
+      "n_features": 84,
+      "n_rows": 40821,
+      "validation_roc_auc": 0.5745537826147719,
+      "test_roc_auc": 0.5970117656867541,
+      "test_pr_auc": 0.31307389669813307,
+      "delta_roc_auc": -0.0035051981966865986,
+      "ci_low": -0.011588212875986206,
+      "ci_high": 0.005010498810391981,
+      "probability_better": 0.208,
+      "significant_at_95": false,
+      "significantly_worse_at_95": false,
+      "verdict": "indistinguishable",
+      "walkforward_roc_auc_mean": 0.5874163676678392,
+      "n_trades": 14,
+      "total_return": -0.027042253045962195,
+      "excess_vs_buy_hold": 0.09444778020738953,
+      "threshold": 0.44,
+      "notes": [
+        "scored on 6016 of 6124 own test rows (the common set across all variants)"
+      ]
+    },
+    {
+      "variant": "drop_sentiment",
+      "kind": "drop",
+      "feature_groups": [
+        "technical",
+        "derivatives",
+        "microstructure",
+        "context"
+      ],
+      "removed_feature": null,
+      "n_features": 95,
+      "n_rows": 40101,
+      "validation_roc_auc": 0.5693870173263329,
+      "test_roc_auc": 0.5971417966345647,
+      "test_pr_auc": 0.31305186951347014,
+      "delta_roc_auc": -0.0033751672488759876,
+      "ci_low": -0.012145141267443321,
+      "ci_high": 0.004686314663698307,
+      "probability_better": 0.214,
+      "significant_at_95": false,
+      "significantly_worse_at_95": false,
+      "verdict": "indistinguishable",
+      "walkforward_roc_auc_mean": 0.5876159789435993,
+      "n_trades": 22,
+      "total_return": -0.1908886401545572,
+      "excess_vs_buy_hold": -0.11328827919944306,
+      "threshold": 0.42,
+      "notes": []
+    },
+    {
+      "variant": "drop_microstructure",
+      "kind": "drop",
+      "feature_groups": [
+        "technical",
+        "derivatives",
+        "sentiment",
+        "context"
+      ],
+      "removed_feature": null,
+      "n_features": 85,
+      "n_rows": 40102,
+      "validation_roc_auc": 0.575438850182524,
+      "test_roc_auc": 0.5994719690216287,
+      "test_pr_auc": 0.31824443925399387,
+      "delta_roc_auc": -0.0010449948618119764,
+      "ci_low": -0.00987458068805069,
+      "ci_high": 0.007188653716591764,
+      "probability_better": 0.406,
+      "significant_at_95": false,
+      "significantly_worse_at_95": false,
+      "verdict": "indistinguishable",
+      "walkforward_roc_auc_mean": 0.5809025993406121,
+      "n_trades": 26,
+      "total_return": -0.029066402938812463,
+      "excess_vs_buy_hold": 0.04853395801630167,
+      "threshold": 0.42,
+      "notes": []
+    },
+    {
+      "variant": "drop_context",
+      "kind": "drop",
+      "feature_groups": [
+        "technical",
+        "derivatives",
+        "sentiment",
+        "microstructure"
+      ],
+      "removed_feature": null,
+      "n_features": 96,
+      "n_rows": 40101,
+      "validation_roc_auc": 0.5774122338093473,
+      "test_roc_auc": 0.6000472057588059,
+      "test_pr_auc": 0.31322805691647115,
+      "delta_roc_auc": -0.0004697581246347893,
+      "ci_low": -0.008881135634157336,
+      "ci_high": 0.006713667663969727,
+      "probability_better": 0.478,
+      "significant_at_95": false,
+      "significantly_worse_at_95": false,
+      "verdict": "indistinguishable",
+      "walkforward_roc_auc_mean": 0.5751636976910566,
+      "n_trades": 16,
+      "total_return": 6.774468137771272e-05,
+      "excess_vs_buy_hold": 0.07766810563649185,
+      "threshold": 0.4,
+      "notes": []
+    },
+    {
+      "variant": "full_union",
+      "kind": "union",
+      "feature_groups": [
+        "technical",
+        "derivatives",
+        "sentiment",
+        "microstructure",
+        "context"
+      ],
+      "removed_feature": null,
+      "n_features": 107,
+      "n_rows": 40101,
+      "validation_roc_auc": 0.5760062672005735,
+      "test_roc_auc": 0.5995819723847795,
+      "test_pr_auc": 0.3212208043642303,
+      "delta_roc_auc": -0.000934991498661164,
+      "ci_low": -0.013540734614323643,
+      "ci_high": 0.010174045893135742,
+      "probability_better": 0.488,
+      "significant_at_95": false,
+      "significantly_worse_at_95": false,
+      "verdict": "indistinguishable",
+      "walkforward_roc_auc_mean": 0.579531251544119,
+      "n_trades": 81,
+      "total_return": -0.12643883900003128,
+      "excess_vs_buy_hold": -0.048838478044917144,
+      "threshold": 0.42,
+      "notes": []
+    }
+  ]
+}

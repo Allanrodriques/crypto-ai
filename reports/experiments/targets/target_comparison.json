@@ -1,0 +1,139 @@
+{
+  "reference_variant": "binary_h6_t50bps",
+  "variants": [
+    {
+      "name": "binary_h6_t50bps",
+      "description": "V1 baseline: up if the 6-candle forward return exceeds +0.5%",
+      "mode": "binary",
+      "horizon_candles": 6,
+      "threshold": 0.005,
+      "n_rows": 41342,
+      "class_distribution": {
+        "1": 0.24572718477910352,
+        "0": 0.7542728152208965
+      },
+      "majority_share": 0.7542728152208965,
+      "test_roc_auc": 0.5947606571891211,
+      "test_pr_auc": 0.31119659967372787,
+      "test_accuracy": 0.7536278619800064,
+      "test_macro_f1": 0.027989821882951654,
+      "test_balanced_accuracy": 0.5044388823992128,
+      "delta_roc_auc_vs_binary": null,
+      "ci_low": null,
+      "ci_high": null,
+      "significant_at_95": false,
+      "significantly_worse_at_95": false,
+      "verdict": "reference",
+      "walkforward_roc_auc_mean": 0.5919128095400101,
+      "notes": []
+    },
+    {
+      "name": "binary_h6_t25bps",
+      "description": "tighter threshold, roughly twice the positive rate",
+      "mode": "binary",
+      "horizon_candles": 6,
+      "threshold": 0.0025,
+      "n_rows": 41342,
+      "class_distribution": {
+        "1": 0.35327313769751695,
+        "0": 0.6467268623024831
+      },
+      "majority_share": 0.6467268623024831,
+      "test_roc_auc": 0.5657211381617029,
+      "test_pr_auc": 0.4079434312252772,
+      "test_accuracy": 0.6414059980651403,
+      "test_macro_f1": 0.12094861660079051,
+      "test_balanced_accuracy": 0.5117293258236335,
+      "delta_roc_auc_vs_binary": 0.001612407504192226,
+      "ci_low": -0.009650021032876018,
+      "ci_high": 0.011994207731382685,
+      "significant_at_95": false,
+      "significantly_worse_at_95": false,
+      "verdict": "indistinguishable",
+      "walkforward_roc_auc_mean": 0.5614210487170835,
+      "notes": []
+    },
+    {
+      "name": "binary_h6_t100bps",
+      "description": "wider threshold, rarer and more selective signals",
+      "mode": "binary",
+      "horizon_candles": 6,
+      "threshold": 0.01,
+      "n_rows": 41342,
+      "class_distribution": {
+        "1": 0.12495969042244437,
+        "0": 0.8750403095775556
+      },
+      "majority_share": 0.8750403095775556,
+      "test_roc_auc": 0.6608036282149586,
+      "test_pr_auc": 0.2017106464106593,
+      "test_accuracy": 0.8740728797162206,
+      "test_macro_f1": 0.005095541401273885,
+      "test_balanced_accuracy": 0.5005532671172216,
+      "delta_roc_auc_vs_binary": 0.015062085034802108,
+      "ci_low": -0.004014734872135847,
+      "ci_high": 0.03286421726561269,
+      "significant_at_95": false,
+      "significantly_worse_at_95": false,
+      "verdict": "indistinguishable",
+      "walkforward_roc_auc_mean": 0.6354489141985364,
+      "notes": []
+    },
+    {
+      "name": "binary_h12_t50bps",
+      "description": "double the horizon at the same move size",
+      "mode": "binary",
+      "horizon_candles": 12,
+      "threshold": 0.005,
+      "n_rows": 41336,
+      "class_distribution": {
+        "1": 0.31285276568295434,
+        "0": 0.6871472343170457
+      },
+      "majority_share": 0.6871472343170457,
+      "test_roc_auc": 0.5497929555280813,
+      "test_pr_auc": 0.3508272325300342,
+      "test_accuracy": 0.6790840187066602,
+      "test_macro_f1": 0.06660412757973734,
+      "test_balanced_accuracy": 0.5041004241296632,
+      "delta_roc_auc_vs_binary": -0.012595000097000653,
+      "ci_low": -0.03289433539191701,
+      "ci_high": 0.008932746636263145,
+      "significant_at_95": false,
+      "significantly_worse_at_95": false,
+      "verdict": "indistinguishable",
+      "walkforward_roc_auc_mean": 0.5633567431846345,
+      "notes": []
+    },
+    {
+      "name": "binary_h24_t50bps",
+      "description": "daily horizon: fewer, slower signals",
+      "mode": "binary",
+      "horizon_candles": 24,
+      "threshold": 0.005,
+      "n_rows": 41324,
+      "class_distribution": {
+        "1": 0.36951612903225806,
+        "0": 0.6304838709677419
+      },
+      "majority_share": 0.6304838709677419,
+      "test_roc_auc": 0.466669212582766,
+      "test_pr_auc": 0.34935334417326,
+      "test_accuracy": 0.6240322580645161,
+      "test_macro_f1": 0.047404985696771554,
+      "test_balanced_accuracy": 0.5001230526114678,
+      "delta_roc_auc_vs_binary": -0.06398822005386712,
+      "ci_low": -0.1135936773689349,
+      "ci_high": -0.01549514752908473,
+      "significant_at_95": false,
+      "significantly_worse_at_95": true,
+      "verdict": "worse",
+      "walkforward_roc_auc_mean": 0.5352384593656546,
+      "notes": []
+    }
+  ],
+  "failed_variants": {
+    "three_class_h6_t50bps": "[15:02:29] /Users/runner/work/xgboost/xgboost/src/metric/elementwise_metric.cu:347: Check failed: preds.Size() == info.labels.Size() (1500 vs. 500) : label and prediction size not match, hint: use merror or mlogloss for multi-class classification\nStack trace:\n  [bt] (0) 1   libxgboost.dylib                    0x0000000115ca4428 dmlc::LogMessageFatal::~LogMessageFatal() + 124\n  [bt] (1) 2   libxgboost.dylib                    0x0000000115ec0290 xgboost::metric::EvalEWiseBase<xgboost::metric::EvalRowLogLoss>::Eval(xgboost::HostDeviceVector<float> const&, xgboost::MetaInfo const&) + 276\n  [bt] (2) 3   libxgboost.dylib                    0x0000000115eb8140 void xgboost::collective::ApplyWithLabels<xgboost::MetricNoCache::Evaluate(xgboost::HostDeviceVector<float> const&, std::__1::shared_ptr<xgboost::DMatrix>)::'lambda'()>(xgboost::Context const*, xgboost::MetaInfo const&, void*, unsigned long, xgboost::MetricNoCache::Evaluate(xgboost::HostDeviceVector<float> const&, std::__1::shared_ptr<xgboost::DMatrix>)::'lambda'()&&) + 100\n  [bt] (3) 4   libxgboost.dylib                    0x0000000115eb7878 xgboost::MetricNoCache::Evaluate(xgboost::HostDeviceVector<float> const&, std::__1::shared_ptr<xgboost::DMatrix>) + 80\n  [bt] (4) 5   libxgboost.dylib                    0x0000000115e903ec xgboost::LearnerImpl::EvalOneIter(int, std::__1::vector<std::__1::shared_ptr<xgboost::DMatrix>, std::__1::allocator<std::__1::shared_ptr<xgboost::DMatrix>>> const&, std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>>> const&) + 1660\n  [bt] (5) 6   libxgboost.dylib                    0x0000000115d23d44 XGBoosterEvalOneIter + 612\n  [bt] (6) 7   python3.12                          0x0000000102b98050 ffi_call_SYSV + 80\n  [bt] (7) 8   python3.12                          0x0000000102b955d0 ffi_call_int + 1484\n  [bt] (8) 9   python3.12                          0x0000000102a34278 _ctypes_callproc + 1056\n\n"
+  },
+  "caveat": "Changing the target changes the question being asked, so accuracy and AUC are not comparable across rows. Only same-mode, same-rows variants carry a delta and an interval."
+}

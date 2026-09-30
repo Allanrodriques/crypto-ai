@@ -1,0 +1,37 @@
+[
+  {
+    "experiment_id": "EXP-00-OHLCV-TECHNICAL",
+    "n_features": 39,
+    "rows": 41342,
+    "feature_manifest_hash": "abbbc511924e4d10",
+    "output_dir": "reports/experiments/exp-00-ohlcv-technical"
+  },
+  {
+    "experiment_id": "EXP-01-DERIVATIVES",
+    "n_features": 62,
+    "rows": 40102,
+    "feature_manifest_hash": "09037eeb664eca5a",
+    "output_dir": "reports/experiments/exp-01-derivatives"
+  },
+  {
+    "experiment_id": "EXP-02-SENTIMENT",
+    "n_features": 51,
+    "rows": 40822,
+    "feature_manifest_hash": "1241497905abf074",
+    "output_dir": "reports/experiments/exp-02-sentiment"
+  },
+  {
+    "experiment_id": "EXP-03-MICROSTRUCTURE",
+    "n_features": 61,
+    "rows": 41061,
+    "feature_manifest_hash": "d41026cc92661e22",
+    "output_dir": "reports/experiments/exp-03-microstructure"
+  },
+  {
+    "experiment_id": "EXP-04-COMBINED",
+    "n_features": 107,
+    "rows": 40101,
+    "feature_manifest_hash": "c5efc44af58a67e3",
+    "output_dir": "reports/experiments/exp-04-combined"
+  }
+]

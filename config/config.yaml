@@ -1,0 +1,178 @@
+# =============================================================================
+# crypto-ml-predictor — master configuration
+#
+# Every tunable in the pipeline is declared here. No module in src/ hard-codes
+# a period, threshold, ratio or random seed.
+#
+# Sections
+#   paths        : output directory layout
+#   data         : Binance market-data collection
+#   validation   : data quality checks applied to raw klines
+#   target       : label definition (the ONLY place future data is allowed)
+#   features     : technical-indicator feature specification
+#   model        : hyper-parameters (random_state is shared)
+#   split        : chronological train / validation / test proportions
+#   cv           : expanding-window time-series cross-validation
+#   backtest     : research backtest rules
+# =============================================================================
+
+paths:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  predictions_dir: data/predictions
+  models_dir: models
+  reports_dir: reports
+  metrics_dir: reports/metrics
+  plots_dir: reports/plots
+  backtests_dir: reports/backtests
+
+# -----------------------------------------------------------------------------
+# Data source: Binance public klines. No API key required.
+# -----------------------------------------------------------------------------
+data:
+  symbol: BTCUSDT
+  interval: 1h
+  start_date: "2022-01-01"
+  end_date: null          # null == "up to the last fully closed candle"
+
+  # data-api.binance.vision serves market data only and needs no key.
+  # api.binance.com is kept as a fallback (klines are public there too).
+  base_url: "https://data-api.binance.vision"
+  fallback_base_urls:
+    - "https://api.binance.com"
+    - "https://api-gcp.binance.com"
+
+  page_size: 1000                 # Binance klines hard cap
+  weight_per_request: 2           # documented request weight for /api/v3/klines
+  weight_limit_per_minute: 1200   # documented IP weight budget
+  request_timeout_seconds: 30
+  max_retries: 5
+  retry_backoff_seconds: 2.0
+  retry_backoff_max_seconds: 90.0
+  retry_status_codes: [418, 429, 500, 502, 503, 504]
+  pause_between_requests_seconds: 0.05
+
+  drop_incomplete_candle: true    # never keep the still-forming candle
+  save_metadata: true             # persist a JSON sidecar with fetch provenance
+  resume: true                    # continue an interrupted download in place
+
+# -----------------------------------------------------------------------------
+# Data validation.  Anything that fails is REPORTED, never silently repaired.
+# -----------------------------------------------------------------------------
+validation:
+  max_gap_candles: 2              # >2 consecutive missing candles == abnormal gap
+  # A candle must break BOTH limits to be called an outlier.  The z-score alone
+  # is useless on hourly crypto: returns are fat-tailed and mostly tiny, so a
+  # normal 7% hourly move is ~70 robust sigmas out.  The absolute floor keeps the
+  # check pointed at moves no real fill could produce.  Retune for other
+  # intervals/assets (e.g. ~0.08 for daily BTC, ~0.02 for 5m).
+  price_move_zscore_threshold: 20.0       # robust z-score limit
+  price_move_max_log_return: 0.35         # |log return| limit (~+42% / -30%)
+  max_zero_volume_ratio: 0.01     # share of candles allowed to have volume 0
+  fail_on_error: false            # true => downloader raises instead of reporting
+  report_file: validation_report.json
+
+# -----------------------------------------------------------------------------
+# Target (label).  This is the ONLY component permitted to look into the future.
+#
+#   future_return = close[t + horizon] / close[t] - 1
+#   target        = 1 if future_return >= threshold else 0
+# -----------------------------------------------------------------------------
+target:
+  horizon_candles: 6
+  threshold: 0.005
+
+# -----------------------------------------------------------------------------
+# Feature engineering.  Every feature is causal: it uses candles t and earlier.
+# -----------------------------------------------------------------------------
+features:
+  sma_periods: [10, 20, 50, 100, 200]
+  ema_periods: [12, 26]
+  rsi_period: 14
+  atr_period: 14
+  bollinger_period: 20
+  bollinger_std: 2.0
+  macd_fast: 12
+  macd_slow: 26
+  macd_signal: 9
+  roc_period: 12
+  return_periods: [1, 3, 6, 12, 24]
+  volume_sma_period: 20
+  volume_lookback: 6
+  volatility_lookbacks: [20, 50]
+  periods_per_year: 8760         # candles per year for a 1h timeframe
+  eps: 1.0e-12                   # guards against divide-by-zero
+  feature_selection:
+    enabled: false               # when enabled, fitted on TRAIN rows only
+    method: mutual_info
+    k: 30
+  scaling:
+    enabled: true                # scaler fitted on TRAIN rows only
+    method: standard
+
+# -----------------------------------------------------------------------------
+# Models.  random_state is shared by every estimator for reproducibility.
+# -----------------------------------------------------------------------------
+model:
+  random_state: 42
+  logistic_regression:
+    C: 1.0
+    max_iter: 2000
+    class_weight: balanced
+    solver: lbfgs
+  random_forest:
+    n_estimators: 400
+    max_depth: 12
+    min_samples_leaf: 20
+    max_features: sqrt
+    n_jobs: -1
+    class_weight: balanced_subsample
+  xgboost:
+    n_estimators: 500
+    max_depth: 4
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    min_child_weight: 5
+    reg_lambda: 1.0
+    reg_alpha: 0.0
+    gamma: 0.0
+    n_jobs: -1
+    eval_metric: logloss
+    early_stopping_rounds: 50     # uses an internal train/valid slice, never test
+
+# -----------------------------------------------------------------------------
+# Chronological split.  Ratios are applied along the time axis, never shuffled.
+# -----------------------------------------------------------------------------
+split:
+  train_ratio: 0.70
+  validation_ratio: 0.15
+  test_ratio: 0.15
+  purge_candles: null            # null => auto (set to target.horizon_candles)
+
+# -----------------------------------------------------------------------------
+# Expanding-window cross-validation on the TRAIN block only.
+# `gap` purges the last `gap` training rows so a training label can never
+# overlap a validation label (default: target.horizon_candles).
+# -----------------------------------------------------------------------------
+cv:
+  n_splits: 5
+  gap: null                      # null => target.horizon_candles
+  min_train_size: 1000
+
+# -----------------------------------------------------------------------------
+# Research backtest.  Long-only, no leverage, no exchange connectivity.
+# The entry threshold is fixed a priori from configuration - it is NOT tuned
+# against the test period.
+# -----------------------------------------------------------------------------
+backtest:
+  initial_capital: 10000.0
+  probability_threshold: 0.60
+  transaction_cost_bps: 10.0     # charged on entry AND exit
+  allow_short: false
+  max_concurrent_positions: 1    # 1 => non-overlapping trades, no double counting
+  exit_mode: horizon              # close the trade after `horizon_candles`
+  exit_probability: null          # null => disabled; else close if p < this
+  risk_free_rate_annual: 0.0
+  periods_per_year: 8760
+  price_column: close

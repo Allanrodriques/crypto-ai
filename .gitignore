@@ -1,0 +1,95 @@
+# ---------------------------------------------------------------------------
+# crypto-ml-predictor — ignore rules
+#
+# The repository is a SOURCE + RESEARCH repository.  Market data, fitted
+# estimators and caches are all reproducible from `scripts/download_data.py`
+# followed by the pipeline, so none of them belong in version control.  The
+# research OUTPUT (reports/experiments/v3/*.csv|md|png|json) IS tracked: those
+# are the documented results and are the point of the review.
+#
+# Nothing here ignores source code, configuration, tests, or V3 reports.
+# ---------------------------------------------------------------------------
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+
+# --- Python bytecode / caches ---
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.ruff_cache/
+.mypy_cache/
+
+# --- Credentials / secrets ---
+# `.env.example` is documentation of the variable NAMES and is tracked; the
+# real `.env` never is.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+id_rsa*
+.netrc
+credentials*
+
+# --- Market data (regenerate with scripts/download_data.py) ---
+# Pinned to the directories rather than `data/raw/*` so the whole tree is
+# covered, including files added later.
+data/raw/
+data/cache/
+data/processed/
+data/predictions/
+*.parquet
+*.feather
+*.arrow
+
+# --- Fitted estimators (regenerate by running the pipeline) ---
+# `models/` holds the V1 artifacts, and `reports/experiments/v3/v3/` holds the
+# 48 V3 refits - the eight random_forest_*.joblib files are ~1 GB EACH, which
+# is the entire reason this repo is ~1 MB instead of ~9 GB.
+models/
+*.joblib
+*.pkl
+*.pickle
+*.bin
+*.onnx
+*.pt
+*.h5
+
+# --- Generated reports that are not research findings ---
+# V1/V2 pipeline output is regenerable and versioned separately.  The V3
+# experiment reports under reports/experiments/ are deliberately NOT ignored.
+reports/metrics/*
+!reports/metrics/.gitkeep
+reports/plots/*
+!reports/plots/.gitkeep
+reports/backtests/*
+!reports/backtests/.gitkeep
+
+# --- Logs & scratch ---
+*.log
+*.tmp
+*.bak
+scratch/
+tmp/
+
+# --- Notebook checkpoints ---
+.ipynb_checkpoints/
+
+# --- OS / editor noise ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+.idea/
+.vscode/

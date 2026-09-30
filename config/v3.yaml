@@ -1,0 +1,300 @@
+# =============================================================================
+# crypto-ml-predictor — V3 configuration (multi-horizon forward returns)
+#
+# This file is a SEPARATE artefact from config/config.yaml.  config/config.yaml
+# is the frozen V1/V2 baseline: it is never edited, and V3 must never inherit a
+# change made to it.  This file is the V3 contract, and it is self-documenting:
+# every value a V3 run depends on is declared here, and nothing below is
+# hard-coded in src/v3/.
+#
+# It loads with the project's own loader (`src.config.load_config`), which
+# validates the V1-shaped sections below and ignores the extra top-level `v3:`
+# section.  That is why the V1 sections are still present: `Config.validate`
+# requires `data`, `target`, `features`, `model`, `split`, `cv` and `backtest`.
+# V3 code reads the `v3:` block (see `src.v3.horizons.build_horizon_ladder`,
+# `src.v3.dataset.v3_block`); the V1 sections are carried along so the file is a
+# valid config on its own and so that V1 tooling pointed at it does not crash.
+#
+# Sections
+#   paths / data / validation / target / features / model / split / cv /
+#   backtest : V1-shaped sections required by the loader (see notes above)
+#   v3        : the V3 contract
+#     v3.horizons, v3.bars_per_day : the horizon ladder (wall-clock, not rows)
+#     v3.symbols, v3.primary_symbol : the V3 universe
+#     v3.features                  : feature selection (buckets / mode)
+#     v3.targets                   : label definition
+#     v3.validation                : purged walk-forward split geometry
+#     v3.models                    : the model set
+#     v3.outputs                   : V3-only output namespaces
+#     v3.reporting                 : the artefacts a V3 run must produce
+# =============================================================================
+
+paths:
+  # `raw_dir` is an INPUT.  V3 reads the downloaded klines and the cached
+  # external sources and never writes into it, so the V1/V2 raw store is safe
+  # to share.  Every output is redirected into the V3 namespace below.
+  raw_dir: data/raw
+  processed_dir: data/processed/v3
+  predictions_dir: data/predictions/v3
+  models_dir: models/v3
+  reports_dir: reports/experiments/v3
+  metrics_dir: reports/experiments/v3/metrics
+  plots_dir: reports/experiments/v3/plots
+  backtests_dir: reports/experiments/v3/backtests
+  notebooks_dir: notebooks/v3
+
+# -----------------------------------------------------------------------------
+# Market data.  Same Binance public klines as V1/V2; no API key.
+# -----------------------------------------------------------------------------
+data:
+  symbol: BTCUSDT
+  interval: 1h
+  start_date: "2022-01-01"
+  end_date: null              # null == "up to the last fully closed candle"
+  base_url: "https://data-api.binance.vision"
+  page_size: 1000
+  drop_incomplete_candle: true
+  save_metadata: true
+  resume: true
+
+# -----------------------------------------------------------------------------
+# Raw-data quality checks.  REPORTED, never silently repaired.  V3 inherits the
+# V1 thresholds; they are about the exchange data, not about the model.
+# -----------------------------------------------------------------------------
+validation:
+  max_gap_candles: 2
+  price_move_zscore_threshold: 20.0
+  price_move_max_log_return: 0.35
+  max_zero_volume_ratio: 0.01
+  fail_on_error: false
+  report_file: validation_report.json
+
+# -----------------------------------------------------------------------------
+# V1 label.  Unused by V3 — kept only because the loader validates it.  A V3
+# label is a per-horizon `future_return_<label>` column (see v3.targets); there
+# is no single horizon and no up/down threshold.
+# -----------------------------------------------------------------------------
+target:
+  horizon_candles: 6
+  threshold: 0.005
+
+# -----------------------------------------------------------------------------
+# V1 feature parameters.  Unused by V3 dataset assembly on purpose: the technical
+# block is the immutable V1 baseline registry defined in
+# `src.features.feature_engineering.FeatureEngineer` (read through
+# `src.features.groups`), so a V3 run cannot drift from the frozen baseline by
+# editing a number here.  V3's own feature section is `v3.features` below, which
+# selects *which* registered features are used, not how they are computed.
+# -----------------------------------------------------------------------------
+features:
+  sma_periods: [10, 20, 50, 100, 200]
+  ema_periods: [12, 26]
+  rsi_period: 14
+  atr_period: 14
+  bollinger_period: 20
+  bollinger_std: 2.0
+  macd_fast: 12
+  macd_slow: 26
+  macd_signal: 9
+  roc_period: 12
+  return_periods: [1, 3, 6, 12, 24]
+  volume_sma_period: 20
+  volume_lookback: 6
+  volatility_lookbacks: [20, 50]
+  periods_per_year: 8760
+  eps: 1.0e-12
+  scaling:
+    enabled: true             # scaler fitted on TRAIN rows only, per fold
+    method: standard
+
+# -----------------------------------------------------------------------------
+# V1 hyper-parameters, mirrored so the file is a complete config.  V3 supplies
+# its own estimator settings per model in the training code; the only value V3
+# inherits is the shared seed, which is what makes a V3 run reproducible.
+# -----------------------------------------------------------------------------
+model:
+  random_state: 42
+  logistic_regression:
+    C: 1.0
+    max_iter: 2000
+    class_weight: balanced
+  random_forest:
+    n_estimators: 400
+    max_depth: 12
+    min_samples_leaf: 20
+    n_jobs: -1
+  xgboost:
+    n_estimators: 500
+    max_depth: 4
+    learning_rate: 0.05
+    n_jobs: -1
+
+# -----------------------------------------------------------------------------
+# V1 chronological split, mirrored.  V3 splits with the purged walk-forward
+# splitter configured in `v3.validation` instead, because a V3 label window can
+# be 180 days long and a fixed-ratio cut cannot be purged correctly.
+# -----------------------------------------------------------------------------
+split:
+  train_ratio: 0.70
+  validation_ratio: 0.15
+  test_ratio: 0.15
+  purge_candles: null
+
+cv:
+  n_splits: 5
+  gap: null
+  min_train_size: 1000
+
+backtest:
+  initial_capital: 10000.0
+  probability_threshold: 0.60
+  transaction_cost_bps: 10.0
+  allow_short: false
+  max_concurrent_positions: 1
+  exit_mode: horizon
+  risk_free_rate_annual: 0.0
+  periods_per_year: 8760
+  price_column: close
+
+# =============================================================================
+# v3: the V3 contract
+# =============================================================================
+v3:
+  version: 3
+  name: multi_horizon_forward_returns
+
+  # --------------------------------------------------------------- grid
+  # `bars_per_day` is bars per DAY (24 on the 1h grid), which is the unit
+  # `Horizon.nominal_bars` converts through.  It is NOT bars per hour: reading
+  # it that way inflated a 1d purge width to 576 bars and silently discarded
+  # far too much training data.
+  interval: 1h
+  bars_per_day: 24
+
+  # ------------------------------------------------------------- horizons
+  # Wall-clock durations, not row counts.  A positional offset would be wrong
+  # on this data: the hourly grid has gaps, so "180 rows" is not 180 days.
+  # The ladder is sorted by duration at load time, so the order below is for
+  # readability only and never affects the output.
+  horizons: ["1d", "3d", "7d", "14d", "30d", "60d", "90d", "180d"]
+
+  # -------------------------------------------------------------- universe
+  symbols: [BTCUSDT, ETHUSDT, SOLUSDT, BNBUSDT, XRPUSDT]
+  primary_symbol: BTCUSDT     # the symbol the headline report is written for
+
+  # ------------------------------------------------------------- features
+  features:
+    # `mode` selects how `buckets` is interpreted:
+    #   all       -> the union of the buckets switched on below (the V3
+    #                baseline: all six, i.e. all 107 registered features)
+    #   buckets   -> identical, named for intent
+    #   explicit  -> this block names nothing; the caller must pass an explicit
+    #                feature list as `enabled_features=` to build_v3_dataset()
+    mode: all
+    # The six buckets are defined by `src.v3.buckets.BUCKET_NAMES`; each of the
+    # 107 V2 registry features belongs to exactly one.  `all` is expanded to
+    # that bucket's feature list by src.v3.dataset before the selection is
+    # handed to `src.v3.buckets.validate_selection`, so a bucket name this
+    # registry does not know is reported rather than silently ignored.
+    buckets:
+      price: all             # returns, moving averages, MA relationships
+      technical: all         # momentum, volatility, Bollinger, candles, 4h/1d context
+      volume: all            # volume level, relative volume, volume change
+      # Declared ON here because this block is the *taxonomy* - all 107
+      # registered features and the bucket each belongs to.  Whether a given
+      # RUN can use them is a data-availability decision made at the command
+      # line, so it is recorded in the run manifest rather than hidden here.
+      #
+      # For BTCUSDT it must currently be excluded, and that is a cache problem,
+      # not a modelling one: binance_futures_BTCUSDT.parquet holds 1,500 rows
+      # ending 2022-03-04 and binance_funding_BTCUSDT.parquet 500 rows ending
+      # 2022-06-16, while the other symbols hold ~53-60k and ~6.6-7.5k rows to
+      # 2026-09-28.  Under `complete_rows_only: true` those features leave BTC
+      # with 2,577 usable rows, so 30d/60d/90d/180d are untrainable.
+      # Excluding them recovers the full span - 40,833 rows, 2022-01-31 to
+      # 2026-09-28, 84 features, labelled examples for every horizon.
+      #   python scripts/run_v3.py --symbol BTCUSDT --exclude-buckets derivatives
+      derivatives: all        # perpetual funding + futures price/volume + basis
+      sentiment: all         # daily Crypto Fear & Greed index
+      microstructure: all    # trade counts, trade size, aggressive order flow
+    # Drop a row when any selected feature is missing.  Turning this off keeps
+    # the sparse rows and makes the gaps visible in `feature_coverage` instead
+    # of silently shortening the history; either way nothing is imputed.
+    complete_rows_only: true
+
+  # -------------------------------------------------------------- targets
+  targets:
+    kind: forward_return
+    price_column: close
+    # One column per horizon: future_return_1d ... future_return_180d
+    label_column_template: "future_return_{horizon}"
+    horizons_are_independent: true
+    # Each horizon is its own regression problem with its own model, its own
+    # purge/embargo and its own metric.  A 1d model is NEVER scored on a 7d
+    # label, and a long horizon is not a rescaled short one: overlapping
+    # labels are purged and embargoed per horizon.
+    note: >
+      future_return_H[t] = close[t + H] / close[t] - 1, resolved by a
+      backward-only as-of lookup so a missing candle shortens a label instead
+      of shifting it. Rows whose future has not happened (the tail) are NaN and
+      are dropped per horizon, never imputed.
+
+  # ----------------------------------------------------------- validation
+  validation:
+    splitter: purged_walk_forward
+    n_splits: 5
+    # Each test block is a fraction of the usable (labelled) span; the
+    # validation block is the bounded window immediately before the embargo.
+    test_fraction: 0.08
+    validation_fraction: 0.08
+    min_train_fraction: 0.30   # early folds are never fitted on a handful of rows
+    # Purge = remove every training row whose label window reaches into the
+    # evaluation block; embargo = skip the same width after it, so one fold's
+    # labels cannot bleed into the next fold's training set.  Both are the
+    # horizon being validated, hence the literal `horizon`.
+    purge: horizon
+    embargo: horizon
+
+  # --------------------------------------------------------------- models
+  # The V3 label is a continuous return, so the model set is regression:
+  # a zero-forecast benchmark, two linear references, and three tree ensembles
+  # spanning bagged trees, histogram GBDT and the project's established booster.
+  # Every model is scored on the same purged folds; the zero benchmark is what
+  # a sophisticated model has to beat to be worth anything.
+  # Names MUST match `src.v3.models.MODEL_NAMES` exactly:
+  #   ('zero', 'mean', 'trailing_mean', 'ridge', 'random_forest', 'xgboost')
+  # The first three are the naive baselines - they exist to be beaten, and at
+  # long horizons they frequently are not.  A name that is not in the registry
+  # is dropped with a warning by src.v3.pipeline.resolve_plan, so a typo here
+  # would silently train fewer models than this line claims.
+  models: [zero, mean, trailing_mean, ridge, random_forest, xgboost]
+
+  # -------------------------------------------------------------- outputs
+  outputs:
+    # `model_dir` names the V3 model namespace.  It is a NAMESPACE, not a
+    # write target: `src.v3.pipeline` deliberately writes the report, the
+    # fitted artifacts and the manifest all under ONE directory (`--out-dir`,
+    # defaulting to `report_dir`), so a run can be relocated or pointed at a
+    # temporary root without leaving files behind.  That containment guarantee
+    # is asserted by walking the tree in tests/test_v3_pipeline.py, and it is
+    # why models land in `<out_dir>/v3/` rather than in this path.
+    model_dir: models/v3
+    report_dir: reports/experiments/v3
+    dataset_dir: data/processed/v3     # only written by an explicit --save run
+
+  # ------------------------------------------------------------ reporting
+  # The artefacts a V3 run is required to produce.  Each one exists because a
+  # number without it cannot be interpreted: coverage explains how much data a
+  # horizon actually had, the fold table proves the scores are out-of-sample.
+  reporting:
+    artifacts:
+      - dataset_summary.json          # rows, span, drop report, missing sources
+      - data_availability.csv         # per-source coverage and provenance
+      - horizon_label_coverage.csv    # labelled vs NaN tail per horizon
+      - feature_coverage.csv          # per-feature coverage, worst first
+      - walkforward_folds.csv         # fold geometry: purge, embargo, row counts
+      - per_horizon_metrics.csv       # one row per (model, horizon, fold)
+      - model_comparison.csv          # one row per (model, horizon), aggregated
+      - bucket_ablation.csv           # feature-bucket contribution, per horizon
+      - error_analysis.md             # where the predictions fail, by regime
+      - summary.md                    # the headline report

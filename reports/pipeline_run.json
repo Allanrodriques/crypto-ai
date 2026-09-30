@@ -1,0 +1,29 @@
+{
+  "started_at": "2026-09-28T13:00:02.141810+00:00",
+  "finished_at": "2026-09-28T13:01:51.271634+00:00",
+  "config_file": "config/config.yaml",
+  "symbol": "BTCUSDT",
+  "interval": "1h",
+  "data_range": [
+    "2022-01-09 08:00:00 UTC",
+    "2026-09-28 06:00:00 UTC"
+  ],
+  "dataset_rows": 41348,
+  "validation_status": "FAIL",
+  "selected_model": "logistic_regression",
+  "models_trained": [
+    "majority_baseline",
+    "momentum_baseline",
+    "logistic_regression",
+    "random_forest",
+    "xgboost"
+  ],
+  "prediction_file": "data/predictions/BTCUSDT_1h_logistic_regression_predictions.csv",
+  "latest_prediction": {
+    "timestamp": "2026-09-28 12:00:00 UTC",
+    "prediction": "DOWN",
+    "probability_up": 0.4930248188504173
+  },
+  "model_metadata": "models/model_metadata.json",
+  "summary": "reports/metrics/summary.md"
+}
